@@ -1,0 +1,332 @@
+/* Better safe than sorry — site. Culorile logo-ului: verde #00221D și auriu #E6C68A. */
+:root {
+  --bg: #00221d;
+  --bg-deep: #001914;
+  --surface: #062e27;
+  --surface-2: #0a3a32;
+  --line: rgba(230, 198, 138, 0.14);
+  --line-soft: rgba(243, 239, 230, 0.08);
+  --gold: #e6c68a;
+  --gold-strong: #f0d6a3;
+  --on-gold: #00221d;
+  --text: #f3efe6;
+  --muted: #a9bab3;
+  --faint: #7f948c;
+  --danger: #ff9b8a;
+  --radius: 22px;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(1200px 600px at 75% -10%, rgba(230, 198, 138, 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(31, 120, 100, 0.18), transparent 60%),
+    var(--bg);
+  background-repeat: no-repeat;
+  color: var(--text);
+  font: 17px/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+main { flex: 1; }
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { color: var(--gold-strong); }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02em; line-height: 1.12; }
+p { margin: 0; }
+
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.wrap.narrow { max-width: 760px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Bara de sus ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0, 34, 29, 0.72);
+  -webkit-backdrop-filter: saturate(160%) blur(18px);
+  backdrop-filter: saturate(160%) blur(18px);
+  border-bottom: 1px solid var(--line-soft);
+}
+.topbar-inner { display: flex; align-items: center; gap: 16px; min-height: 64px; }
+.topbar-inner .nav { margin-left: auto; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.brand:hover { color: var(--text); }
+.brand .shield { width: 24px; height: 27px; flex: none; }
+.nav { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--muted); font-size: 15px; padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
+.nav a:hover { color: var(--text); background: var(--line-soft); }
+.nav a[aria-current="page"] { color: var(--text); background: var(--line-soft); }
+.langs a { display: inline-block; color: var(--gold); font-size: 15px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.langs a:hover { color: var(--gold-strong); border-color: rgba(230, 198, 138, 0.4); }
+
+/* ---------- Butoane ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: 600 16px/1 var(--font);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+}
+.button:active { transform: scale(0.98); }
+.button .icon { width: 18px; height: 18px; }
+.button.primary { background: var(--gold); color: var(--on-gold); }
+.button.primary:hover { background: var(--gold-strong); color: var(--on-gold); }
+.button.ghost { color: var(--text); border-color: var(--line); background: rgba(243, 239, 230, 0.04); }
+.button.ghost:hover { border-color: rgba(230, 198, 138, 0.4); color: var(--text); }
+.button[disabled] { opacity: 0.6; cursor: default; }
+.text-link { font-weight: 600; }
+
+/* ---------- Pagina principală ---------- */
+
+.hero { padding: 72px 0 40px; }
+.hero-inner { display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 56px; }
+.eyebrow { color: var(--gold); font-size: 13px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+.hero h1 { font-size: clamp(44px, 7vw, 76px); font-weight: 750; letter-spacing: -0.035em; line-height: 1.02; }
+.lead { color: var(--muted); font-size: clamp(17px, 2vw, 20px); line-height: 1.55; margin-top: 22px; max-width: 34em; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+
+/* Macheta telefonului, desenată din piesele aplicației. */
+.phone {
+  justify-self: center;
+  width: 300px;
+  aspect-ratio: 300 / 620;
+  border-radius: 52px;
+  padding: 12px;
+  background: linear-gradient(160deg, #1d3a34, #0b1f1b);
+  box-shadow: var(--shadow), inset 0 0 0 1.5px rgba(255, 255, 255, 0.08);
+}
+.screen {
+  height: 100%;
+  border-radius: 41px;
+  background: linear-gradient(180deg, #032a24, #00211c 60%);
+  padding: 54px 18px 22px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.island { position: absolute; top: 12px; left: 50%; width: 92px; height: 26px; margin-left: -46px; border-radius: 13px; background: #000; }
+.screen-title { font: 700 26px/1.1 var(--font-display); letter-spacing: -0.02em; margin-bottom: 16px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tile {
+  height: 104px;
+  border-radius: 20px;
+  padding: 12px;
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.09), rgba(255, 255, 255, 0.04));
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tile.done { border-color: rgba(230, 198, 138, 0.55); background: linear-gradient(160deg, rgba(230, 198, 138, 0.16), rgba(230, 198, 138, 0.05)); }
+.tile-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.tile-icon { width: 22px; height: 22px; color: var(--muted); }
+.tile.done .tile-icon { color: var(--gold); }
+.tile-check { width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid rgba(243, 239, 230, 0.35); display: grid; place-items: center; }
+.tile.done .tile-check { background: var(--gold); border-color: var(--gold); }
+.tick { width: 14px; height: 14px; color: var(--on-gold); stroke-width: 2.6; }
+.tile-label { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.hold { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.ring { position: relative; width: 74px; height: 74px; display: grid; place-items: center; }
+.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 5; }
+.ring-track { stroke: rgba(243, 239, 230, 0.12); }
+.ring-fill { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 88; animation: hold 3.2s ease-in-out infinite; }
+.ring-icon { width: 26px; height: 26px; color: var(--gold); }
+@keyframes hold {
+  0%, 15% { stroke-dashoffset: 176; }
+  65%, 85% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 176; }
+}
+@media (prefers-reduced-motion: reduce) { .ring-fill { animation: none; } }
+
+.section { padding: 56px 0; }
+.section.tight { padding-top: 0; }
+.section-title { font-size: clamp(30px, 4.2vw, 44px); font-weight: 720; max-width: 18em; margin-bottom: 32px; }
+.section-title.small { font-size: 24px; margin-bottom: 18px; }
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature {
+  background: linear-gradient(180deg, var(--surface), rgba(6, 46, 39, 0.6));
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius);
+  padding: 26px;
+}
+.feature-icon { width: 46px; height: 46px; border-radius: 14px; background: rgba(230, 198, 138, 0.12); color: var(--gold); display: grid; place-items: center; margin-bottom: 18px; }
+.feature-icon .icon { width: 24px; height: 24px; }
+.feature h3 { font-size: 19px; font-weight: 650; margin-bottom: 8px; }
+.feature p { color: var(--muted); font-size: 16px; }
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 40px;
+  border-radius: 28px;
+  border: 1px solid var(--line);
+  background: linear-gradient(120deg, rgba(230, 198, 138, 0.1), rgba(230, 198, 138, 0.02));
+}
+.band .shield { width: 76px; height: 85px; flex: none; }
+.band h2 { font-size: 30px; font-weight: 720; margin-bottom: 10px; }
+.band p { color: var(--muted); margin-bottom: 14px; max-width: 40em; }
+
+.card { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 28px; padding: 36px; }
+.waitlist { text-align: center; }
+.waitlist h2 { font-size: clamp(30px, 4vw, 40px); font-weight: 720; }
+.waitlist > p { color: var(--muted); margin: 12px auto 26px; max-width: 30em; }
+.field-row { display: flex; gap: 10px; }
+.field-row input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg-deep);
+  color: var(--text);
+  font: 17px var(--font);
+}
+.field-row input::placeholder { color: var(--faint); }
+.field-row input:focus { outline: none; border-color: var(--gold); }
+.field-row input[aria-invalid="true"] { border-color: var(--danger); }
+.consent { display: flex; gap: 10px; align-items: flex-start; text-align: left; margin-top: 16px; color: var(--muted); font-size: 14px; line-height: 1.5; cursor: pointer; }
+.consent input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--gold); }
+.form-status { min-height: 24px; margin-top: 14px; font-size: 15px; font-weight: 600; }
+.form-status.ok { color: var(--gold); }
+.form-status.error { color: var(--danger); }
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- Paginile de text ---------- */
+
+.page-head { padding-top: 64px; padding-bottom: 32px; }
+.page-head h1 { font-size: clamp(38px, 6vw, 56px); font-weight: 750; letter-spacing: -0.03em; }
+.page-head .lead { margin-top: 16px; }
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 22px 24px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.summary .shield { width: 34px; height: 38px; flex: none; }
+.summary p { font-weight: 550; }
+
+.doc-section { padding: 24px 0; border-top: 1px solid var(--line-soft); }
+.doc-section:first-child { border-top: 0; padding-top: 4px; }
+.doc-section h2 { font-size: 21px; font-weight: 650; margin-bottom: 10px; }
+.doc-section p { color: var(--muted); }
+.num { color: var(--gold); margin-right: 4px; }
+
+.faqs { display: grid; gap: 10px; margin-bottom: 36px; }
+.faq { background: var(--surface); border: 1px solid var(--line-soft); border-radius: 18px; }
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 18px 52px 18px 22px;
+  font-weight: 600;
+  position: relative;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s ease;
+}
+.faq[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+.faq p { color: var(--muted); padding: 0 22px 20px; }
+.contact { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.contact h2 { font-size: 24px; font-weight: 680; margin-bottom: 6px; }
+.contact p { color: var(--muted); }
+
+/* ---------- Subsol ---------- */
+
+.footer { border-top: 1px solid var(--line-soft); padding: 32px 0 40px; margin-top: 40px; }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.footer-brand { display: flex; align-items: center; gap: 12px; }
+.footer-brand .shield { width: 28px; height: 31px; }
+.footer-brand div { display: flex; flex-direction: column; font-size: 14px; }
+.footer-brand span { color: var(--faint); }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 15px; }
+.footer-links a { color: var(--muted); }
+.footer-links a:hover { color: var(--text); }
+
+/* ---------- Ecrane mici ---------- */
+
+@media (max-width: 900px) {
+  .hero { padding-top: 48px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  .features { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  /* Sus: logo + limba; dedesubt: Suport · Confidențialitate · Termeni (logo-ul duce acasă). */
+  .topbar-inner { flex-wrap: wrap; gap: 0 12px; min-height: 0; padding-top: 10px; padding-bottom: 6px; }
+  .topbar-inner .langs { margin-left: auto; }
+  .topbar-inner .nav { order: 3; width: 100%; margin: 6px 0 0 -10px; }
+  .nav a { padding: 7px 10px; font-size: 14px; }
+  .nav a:first-child { display: none; }
+  .hero { padding: 36px 0 16px; }
+  .actions .button { flex: 1 1 100%; }
+  .phone { width: 260px; border-radius: 46px; }
+  .screen { border-radius: 36px; padding: 48px 14px 18px; }
+  .tile { height: 88px; }
+  .features { grid-template-columns: 1fr; }
+  .section { padding: 40px 0; }
+  .band { flex-direction: column; align-items: flex-start; padding: 28px 24px; gap: 20px; }
+  .band .shield { width: 54px; height: 60px; }
+  .card { padding: 26px 20px; border-radius: 24px; }
+  .field-row { flex-direction: column; }
+  .field-row .button { width: 100%; }
+  .contact { flex-direction: column; align-items: flex-start; }
+  .contact .button { width: 100%; }
+  .page-head { padding-top: 40px; }
+}
+
+/* Telefoanele cele mai înguste: numele și limba rămân pe același rând. */
+@media (max-width: 360px) {
+  .brand { gap: 8px; font-size: 15px; }
+  .brand .shield { width: 20px; height: 23px; }
+  .langs a { font-size: 14px; padding: 6px 10px; }
+}
