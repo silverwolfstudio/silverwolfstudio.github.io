@@ -1,0 +1,771 @@
+/* Better safe than sorry — site. Arată ca aplicația (tema verde): fundal viu cu unde, carduri de sticlă,
+   titluri „gravate în sticlă”. Culorile logo-ului: verde #00221D și auriu #E6C68A. */
+:root {
+  --bg: #001a16;
+  --bg-deep: #00130f;
+  --surface: #062e27;
+  --surface-2: #0a3a32;
+  --line: rgba(230, 198, 138, 0.14);
+  --line-soft: rgba(243, 239, 230, 0.08);
+  --gold: #e6c68a;
+  --gold-strong: #f0d6a3;
+  --on-gold: #00221d;
+  --text: #f3efe6;
+  --muted: #a9bab3;
+  --faint: #7f948c;
+  --danger: #ff9b8a;
+  --radius: 22px;
+  --shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  /* Sticla cardurilor, ca în aplicație: culoarea cardului pe jumătate transparentă, margine luminoasă, umbră moale. */
+  --glass: linear-gradient(135deg, rgba(11, 52, 45, 0.74), rgba(6, 36, 31, 0.62));
+  --glass-border: rgba(255, 255, 255, 0.13);
+  --glass-shadow: 0 14px 34px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  /* Fără estompare în spatele cardurilor: fundalul se mișcă tot timpul, iar estomparea ar trebui recalculată la
+     fiecare cadru pentru fiecare card (pagina sacada). Fundalul e oricum moale, deci nu se vede diferența. */
+  --glass-blur: none;
+  --mint: #7fe3c2;
+  /* Curbele de mișcare ale site-ului: `out` și `expo` pentru interfață și cameră (pornesc hotărât, se așază lin),
+     `ambient` pentru fundal și tot ce plutește (dus-întors, ca o sinusoidă). */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-ambient: cubic-bezier(0.45, 0, 0.55, 1);
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.55 var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+.page { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; position: relative; }
+main { flex: 1; }
+
+/* ---------- Fundalul viu: aceleași unde ca în aplicație ---------- */
+
+.aurora {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: linear-gradient(180deg, #01271f 0%, var(--bg) 50%, #011c21 100%);
+}
+/* Undele mari de culoare: plutesc pe orizontală (elementul) și pe verticală (interiorul), cu durate diferite,
+   deci drumul nu se repetă vizibil. Sunt desenate mici și mărite de placa grafică (scale), iar animațiile mișcă
+   doar `transform`, deci browserul nu redesenează nimic în timpul lor. */
+.glow { position: absolute; width: 40vmax; height: 40vmax; margin: -20vmax 0 0 -20vmax; animation: drift-x 47s var(--ease-ambient) infinite alternate; will-change: transform; }
+.glow i { position: absolute; inset: 0; border-radius: 50%; animation: drift-y 31s var(--ease-ambient) infinite alternate; will-change: transform; }
+.glow-1 { left: 12%; top: 8%; }
+.glow-1 i { background: radial-gradient(closest-side, rgba(12, 122, 99, 0.5), rgba(12, 122, 99, 0.3) 35%, rgba(12, 122, 99, 0.1) 70%, transparent); }
+.glow-2 { left: 92%; top: 46%; animation-duration: 59s; animation-delay: -20s; }
+.glow-2 i { background: radial-gradient(closest-side, rgba(10, 85, 120, 0.5), rgba(10, 85, 120, 0.3) 35%, rgba(10, 85, 120, 0.1) 70%, transparent); animation-duration: 41s; animation-delay: -9s; }
+.glow-3 { left: 24%; top: 92%; animation-duration: 53s; animation-delay: -33s; }
+.glow-3 i { background: radial-gradient(closest-side, rgba(111, 122, 69, 0.3), rgba(111, 122, 69, 0.18) 35%, rgba(111, 122, 69, 0.06) 70%, transparent); animation-duration: 37s; animation-delay: -17s; }
+@keyframes drift-x { from { transform: translate3d(-11vmax, 0, 0); } to { transform: translate3d(11vmax, 0, 0); } }
+@keyframes drift-y { from { transform: translate3d(0, -6vmax, 0) scale3d(2.8, 2.8, 1); } to { transform: translate3d(0, 6vmax, 0) scale3d(3.2, 3.2, 1); } }
+
+/* Firele de lumină: desenate la jumătate și mărite de două ori; alunecă exact cu o perioadă (1400px pe ecran =
+   700px în desen), deci reluarea nu se vede (de aceea alunecarea rămâne cu viteză constantă: orice altă curbă ar
+   face firul să pulseze la fiecare tură); urcă și coboară foarte puțin, dus-întors. Încep cu o perioadă în stânga ecranului
+   și sunt destul de lungi cât să treacă de marginea din dreapta pe orice ecran. */
+/* Mărirea și înclinarea se fac în jurul unui punct din mijlocul ecranului (1200px în desen), ca firul să rămână la
+   înălțimea lui pe toată lățimea; cu el, marginea din stânga a firului ajunge la -1400px. */
+.ribbon { position: absolute; left: -200px; height: 150px; margin-top: -75px; transform-origin: 1200px 50%; animation: bob 26s var(--ease-ambient) infinite alternate; will-change: transform; }
+.ribbon svg { display: block; animation: slide 96s linear infinite; will-change: transform; }
+.ribbon-1 { top: 20%; --tilt: -5deg; }
+.ribbon-2 { top: 55%; --tilt: 4deg; animation-duration: 33s; }
+.ribbon-2 svg { animation-duration: 128s; animation-direction: reverse; }
+.ribbon-3 { top: 84%; --tilt: -3deg; animation-duration: 21s; }
+.ribbon-3 svg { animation-duration: 150s; }
+@keyframes slide { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-700px, 0, 0); } }
+@keyframes bob { from { transform: translate3d(0, -16px, 0) rotate(var(--tilt)) scale(2); } to { transform: translate3d(0, 16px, 0) rotate(var(--tilt)) scale(2); } }
+.aurora-sheen { position: absolute; inset: 0; background: linear-gradient(150deg, rgba(255, 255, 255, 0.04), transparent 42%); }
+/* Tenta de roz de când se îmbujorează Ruth: un strat care doar apare și dispare (vezi „Ruth, mascota”). */
+.aurora-blush { position: absolute; inset: 0; opacity: 0; background: radial-gradient(130% 100% at 85% 95%, rgba(255, 120, 170, 0.4), rgba(255, 150, 190, 0.2) 45%, rgba(255, 170, 200, 0.07) 75%, transparent); }
+@media (prefers-reduced-motion: reduce) {
+  .glow, .glow i, .ribbon, .ribbon svg { animation: none; }
+  .glow i { transform: scale(3); }
+  .ribbon { transform: rotate(var(--tilt)) scale(2); }
+}
+
+/* ---------- Titluri „gravate în sticlă”: litere translucide, cu margine fină și o lumină verde-aurie ---------- */
+
+.etched {
+  color: transparent;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(214, 244, 232, 0.9) 48%, rgba(236, 208, 150, 0.86) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-stroke: 0.5px rgba(255, 255, 255, 0.3);
+  filter: drop-shadow(0 0 16px rgba(72, 214, 168, 0.3)) drop-shadow(0 0 38px rgba(230, 198, 138, 0.16)) drop-shadow(0 1px 0 rgba(0, 0, 0, 0.35));
+  padding-bottom: 0.08em;
+}
+
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+
+a { color: var(--gold); text-decoration: none; }
+a:hover { color: var(--gold-strong); }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: 8px;
+}
+
+h1, h2, h3 { font-family: var(--font-display); margin: 0; letter-spacing: -0.02em; line-height: 1.12; }
+p { margin: 0; }
+
+.wrap { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+.wrap.narrow { max-width: 760px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- Bara de sus ---------- */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(0, 24, 20, 0.82);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.topbar-inner { display: flex; align-items: center; gap: 16px; min-height: 64px; }
+.topbar-inner .nav { margin-left: auto; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--text); font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; }
+.brand:hover { color: var(--text); }
+.brand .shield { width: 24px; height: 27px; flex: none; }
+.nav { display: flex; align-items: center; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.nav::-webkit-scrollbar { display: none; }
+.nav a { color: var(--muted); font-size: 15px; padding: 8px 12px; border-radius: 999px; white-space: nowrap; }
+.nav a:hover { color: var(--text); background: var(--line-soft); }
+.nav a[aria-current="page"] { color: var(--text); background: var(--line-soft); }
+.langs a { display: inline-block; color: var(--gold); font-size: 15px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+.langs a:hover { color: var(--gold-strong); border-color: rgba(230, 198, 138, 0.4); }
+
+/* ---------- Butoane ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 50px;
+  padding: 0 24px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font: 600 16px/1 var(--font);
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition: transform 0.15s var(--ease-out), background-color 0.2s var(--ease-out), color 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
+  white-space: nowrap;
+}
+.button:active { transform: scale(0.98); }
+.button .icon { width: 18px; height: 18px; }
+.button.primary { background: linear-gradient(160deg, #f4dfb0, var(--gold) 55%, #cfae6e); color: var(--on-gold); box-shadow: 0 10px 26px rgba(230, 198, 138, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.5); }
+.button.primary:hover { background: var(--gold-strong); color: var(--on-gold); }
+.button.ghost { color: var(--text); border-color: var(--glass-border); background: rgba(243, 239, 230, 0.06); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+.button.ghost:hover { border-color: rgba(230, 198, 138, 0.4); color: var(--text); }
+.button[disabled] { opacity: 0.6; cursor: default; }
+.text-link { font-weight: 600; }
+
+/* ---------- Pagina principală ---------- */
+
+.hero { padding: 72px 0 40px; }
+.hero-inner { display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 56px; }
+.eyebrow { color: var(--gold); font-size: 13px; font-weight: 650; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 16px; }
+.hero h1 { font-size: clamp(44px, 7vw, 76px); font-weight: 750; letter-spacing: -0.035em; line-height: 1.02; }
+.lead { color: var(--muted); font-size: clamp(17px, 2vw, 20px); line-height: 1.55; margin-top: 22px; max-width: 34em; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+
+/* Macheta telefonului, desenată din piesele aplicației (tema nouă): fundal cu unde, pătrate de sticlă.
+   Stă puțin întoarsă și plutește, ca un obiect în spațiu. */
+.phone-stage { justify-self: center; perspective: 1400px; }
+.phone {
+  width: 300px;
+  aspect-ratio: 300 / 620;
+  border-radius: 52px;
+  padding: 12px;
+  background: linear-gradient(160deg, #1c3a34, #081714);
+  box-shadow: 40px 50px 90px rgba(0, 0, 0, 0.45), 0 0 90px rgba(46, 190, 150, 0.14), inset 0 0 0 1.5px rgba(255, 255, 255, 0.12);
+  transform: rotateY(-16deg) rotateX(6deg);
+  animation: phone-float 9s var(--ease-ambient) infinite alternate;
+  will-change: transform;
+}
+@keyframes phone-float {
+  from { transform: rotateY(-16deg) rotateX(6deg) translate3d(0, -8px, 0); }
+  to { transform: rotateY(-9deg) rotateX(3deg) translate3d(0, 8px, 0); }
+}
+.screen {
+  height: 100%;
+  border-radius: 41px;
+  background: linear-gradient(180deg, #01271f, #001a16 55%, #011c21);
+  padding: 48px 16px 20px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.screen > * { position: relative; }
+/* Undele din fundalul aplicației, în mic. */
+.screen-aurora { position: absolute; inset: 0; }
+.screen-aurora i { position: absolute; width: 150%; aspect-ratio: 1; border-radius: 50%; animation: screen-drift 17s var(--ease-ambient) infinite alternate; will-change: transform; }
+@keyframes screen-drift { from { transform: translate3d(0, -7%, 0) scale(0.94); } to { transform: translate3d(0, 7%, 0) scale(1.06); } }
+.screen-aurora i:nth-child(1) { left: -80%; top: -30%; background: radial-gradient(closest-side, rgba(12, 122, 99, 0.62), rgba(12, 122, 99, 0.18) 70%, transparent); }
+.screen-aurora i:nth-child(2) { left: 30%; top: 22%; background: radial-gradient(closest-side, rgba(10, 85, 120, 0.6), rgba(10, 85, 120, 0.18) 70%, transparent); animation-duration: 23s; }
+.screen-aurora i:nth-child(3) { left: -60%; top: 62%; background: radial-gradient(closest-side, rgba(111, 122, 69, 0.34), rgba(111, 122, 69, 0.1) 70%, transparent); animation-duration: 19s; }
+.island { position: absolute !important; top: 12px; left: 50%; width: 92px; height: 26px; margin-left: -46px; border-radius: 13px; background: #000; }
+.switcher { align-self: center; display: flex; padding: 3px; border-radius: 16px; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; }
+.switcher span { font-size: 10.5px; font-weight: 600; color: var(--muted); padding: 5px 9px; border-radius: 13px; white-space: nowrap; }
+.switcher .on { color: var(--text); background: rgba(230, 198, 138, 0.22); }
+.screen-title { font: 700 25px/1.1 var(--font-display); letter-spacing: -0.02em; margin-bottom: 10px; }
+.progress { height: 5px; border-radius: 3px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.progress i { display: block; width: 50%; height: 100%; border-radius: 3px; background: var(--gold); }
+.progress-text { font-size: 10.5px; font-weight: 500; color: var(--muted); margin: 6px 0 12px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.tile {
+  height: 94px;
+  border-radius: 19px;
+  padding: 11px;
+  background: linear-gradient(135deg, rgba(13, 58, 50, 0.66), rgba(8, 40, 35, 0.54));
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.tile.done { border-color: rgba(230, 198, 138, 0.55); }
+.tile-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.tile-icon { width: 21px; height: 21px; color: var(--muted); order: 2; }
+.tile.done .tile-icon { color: var(--gold); }
+.tile-check { width: 22px; height: 22px; border-radius: 11px; border: 1.5px solid rgba(243, 239, 230, 0.35); display: grid; place-items: center; }
+.tile.done .tile-check { background: var(--gold); border-color: var(--gold); }
+.tick { width: 14px; height: 14px; color: var(--on-gold); stroke-width: 2.6; }
+.tile-label { font-size: 12.5px; font-weight: 600; line-height: 1.2; }
+.hold { margin-top: auto; display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted); font-size: 12px; font-weight: 600; }
+.ring { position: relative; width: 68px; height: 68px; display: grid; place-items: center; border-radius: 50%; background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 30px rgba(230, 198, 138, 0.18); }
+.ring-svg { position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg); }
+.ring circle { fill: none; stroke-width: 5; }
+.ring-track { stroke: rgba(243, 239, 230, 0.12); }
+.ring-fill { stroke: var(--gold); stroke-linecap: round; stroke-dasharray: 176; stroke-dashoffset: 88; animation: hold 3.6s var(--ease-ambient) infinite; }
+.ring-icon { width: 24px; height: 24px; color: var(--gold); }
+/* Se umple, rămâne plin o clipă, apoi se stinge și reîncepe de la gol: fără derularea înapoi de la sfârșit. */
+@keyframes hold {
+  0% { stroke-dashoffset: 176; opacity: 0; }
+  10% { stroke-dashoffset: 176; opacity: 1; }
+  66%, 84% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .ring-fill, .phone, .screen-aurora i { animation: none; } }
+
+.section { padding: 56px 0; }
+.section.tight { padding-top: 0; }
+.section-title { font-size: clamp(30px, 4.2vw, 44px); font-weight: 720; max-width: 18em; margin-bottom: 32px; }
+.section-title.small { font-size: 24px; margin-bottom: 18px; }
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.feature {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border-radius: var(--radius);
+  padding: 26px;
+  position: relative;
+  transition: transform 0.45s var(--ease-out);
+}
+/* Marginea aurie și umbra de la trecerea cursorului stau pe un strat separat, care doar apare și dispare. */
+.feature::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid rgba(230, 198, 138, 0.4);
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.3), 0 0 40px rgba(72, 214, 168, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  transition: opacity 0.45s var(--ease-out);
+  pointer-events: none;
+}
+.feature:hover { transform: translate3d(0, -6px, 0); }
+.feature:hover::after { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .feature, .feature::after { transition: none; } .feature:hover { transform: none; } }
+.feature-icon { width: 46px; height: 46px; border-radius: 14px; background: rgba(230, 198, 138, 0.12); color: var(--gold); display: grid; place-items: center; margin-bottom: 18px; }
+.feature-icon .icon { width: 24px; height: 24px; }
+.feature h3 { font-size: 19px; font-weight: 650; margin-bottom: 8px; }
+.feature p { color: var(--muted); font-size: 16px; }
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  padding: 40px;
+  border-radius: 28px;
+  border: 1px solid rgba(230, 198, 138, 0.26);
+  background: linear-gradient(120deg, rgba(230, 198, 138, 0.1), rgba(8, 44, 38, 0.66));
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.band .shield { width: 76px; height: 85px; flex: none; }
+.band h2 { font-size: 30px; font-weight: 720; margin-bottom: 10px; }
+.band p { color: var(--muted); margin-bottom: 14px; max-width: 40em; }
+
+.card { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-radius: 28px; padding: 36px; }
+.waitlist { text-align: center; }
+.waitlist h2 { font-size: clamp(30px, 4vw, 40px); font-weight: 720; }
+.waitlist > p { color: var(--muted); margin: 12px auto 26px; max-width: 30em; }
+.field-row { display: flex; gap: 10px; }
+.field-row input {
+  flex: 1;
+  min-width: 0;
+  height: 52px;
+  padding: 0 20px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(0, 25, 20, 0.55);
+  color: var(--text);
+  font: 17px var(--font);
+}
+.field-row input::placeholder { color: var(--faint); }
+.field-row input:focus { outline: none; border-color: var(--gold); }
+.field-row input[aria-invalid="true"] { border-color: var(--danger); }
+.consent { display: flex; gap: 10px; align-items: flex-start; text-align: left; margin-top: 16px; color: var(--muted); font-size: 14px; line-height: 1.5; cursor: pointer; }
+.consent input { width: 18px; height: 18px; margin: 2px 0 0; flex: none; accent-color: var(--gold); }
+.form-status { min-height: 24px; margin-top: 14px; font-size: 15px; font-weight: 600; }
+.form-status.ok { color: var(--gold); }
+.form-status.error { color: var(--danger); }
+.trap { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+/* ---------- Paginile de text ---------- */
+
+.page-head { padding-top: 64px; padding-bottom: 32px; }
+.page-head h1 { font-size: clamp(38px, 6vw, 56px); font-weight: 750; letter-spacing: -0.03em; }
+.page-head .lead { margin-top: 16px; }
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 28px;
+  padding: 22px 24px;
+  border-radius: var(--radius);
+  background: var(--glass);
+  border: 1px solid rgba(230, 198, 138, 0.26);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+}
+.summary .shield { width: 34px; height: 38px; flex: none; }
+.summary p { font-weight: 550; }
+
+.doc { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-radius: 28px; padding: 14px 32px; }
+.doc-section { padding: 24px 0; border-top: 1px solid var(--line-soft); }
+.doc-section:first-child { border-top: 0; }
+.doc-section h2 { font-size: 21px; font-weight: 650; margin-bottom: 10px; }
+.doc-section p { color: #c3d2cc; }
+.num { color: var(--gold); margin-right: 4px; }
+
+.faqs { display: grid; gap: 10px; margin-bottom: 36px; }
+.faq { background: var(--glass); border: 1px solid var(--glass-border); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); border-radius: 18px; }
+.faq summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 18px 52px 18px 22px;
+  font-weight: 600;
+  position: relative;
+}
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--gold);
+  border-bottom: 2px solid var(--gold);
+  transform: translateY(-70%) rotate(45deg);
+  transition: transform 0.2s var(--ease-out);
+}
+.faq[open] summary::after { transform: translateY(-30%) rotate(-135deg); }
+.faq p { color: var(--muted); padding: 0 22px 20px; }
+.contact { display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.contact h2 { font-size: 24px; font-weight: 680; margin-bottom: 6px; }
+.contact p { color: var(--muted); }
+
+/* ---------- Subsol ---------- */
+
+.footer { border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 32px 0 40px; margin-top: 40px; background: rgba(0, 19, 15, 0.6); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); }
+.footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.footer-brand { display: flex; align-items: center; gap: 12px; }
+.footer-brand .shield { width: 28px; height: 31px; }
+.footer-brand div { display: flex; flex-direction: column; font-size: 14px; }
+.footer-brand span { color: var(--faint); }
+.footer-links { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 15px; }
+.footer-links a { color: var(--muted); }
+.footer-links a:hover { color: var(--text); }
+
+/* ---------- Ecrane mici ---------- */
+
+@media (max-width: 900px) {
+  .hero { padding-top: 48px; }
+  .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+  .features { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .wrap { padding: 0 16px; }
+  /* Sus: logo + limba; dedesubt: Suport · Confidențialitate · Termeni (logo-ul duce acasă). */
+  .topbar-inner { flex-wrap: wrap; gap: 0 12px; min-height: 0; padding-top: 10px; padding-bottom: 6px; }
+  .topbar-inner .langs { margin-left: auto; }
+  .topbar-inner .nav { order: 3; width: 100%; margin: 6px 0 0 -10px; }
+  .nav a { padding: 7px 10px; font-size: 14px; }
+  .nav a:first-child { display: none; }
+  .hero { padding: 36px 0 16px; }
+  .actions .button { flex: 1 1 100%; }
+  .phone { width: 260px; border-radius: 46px; }
+  .screen { border-radius: 36px; padding: 44px 13px 16px; }
+  .tile { height: 78px; }
+  .switcher { margin-bottom: 10px; }
+  .doc { padding: 8px 20px; border-radius: 24px; }
+  .features { grid-template-columns: 1fr; }
+  .section { padding: 40px 0; }
+  .band { flex-direction: column; align-items: flex-start; padding: 28px 24px; gap: 20px; }
+  .band .shield { width: 54px; height: 60px; }
+  .card { padding: 26px 20px; border-radius: 24px; }
+  .field-row { flex-direction: column; }
+  .field-row .button { width: 100%; }
+  .contact { flex-direction: column; align-items: flex-start; }
+  .contact .button { width: 100%; }
+  .page-head { padding-top: 40px; }
+}
+
+/* Telefoanele cele mai înguste: numele și limba rămân pe același rând. */
+@media (max-width: 360px) {
+  .brand { gap: 8px; font-size: 15px; }
+  .brand .shield { width: 20px; height: 23px; }
+  .langs a { font-size: 14px; padding: 6px 10px; }
+}
+
+.doc { width: calc(100% - 32px); }
+
+/* ---------- Intrarea: logo-ul 3D; ușa de pe spatele lui e ușa prin care intri ---------- */
+
+/* Intrarea apare doar dacă scriptul din <head> a pus `has-intro` (cu JavaScript, o dată pe vizită). */
+.intro { display: none; }
+.page { transition: opacity 0.45s var(--ease-out); }
+.has-intro { overflow: hidden; }
+.has-intro .page { opacity: 0; pointer-events: none; }
+/* `has-intro` = pagina e ascunsă (intrarea e pe ecran); `intro-on` = intrarea rămâne desenată și peste pagină,
+   cât se estompează la sfârșitul trecerii prin ușă. */
+.has-intro .intro, .intro-on .intro { display: grid; place-items: center; position: fixed; inset: 0; z-index: 100; overflow: hidden; }
+.has-intro .ruth { opacity: 0; }
+.has-intro .ruth-button { pointer-events: none; }
+/* Pentru clipa în care intro.js predă pagina de la animația lui la starea obișnuită (fără tranziția paginii). */
+.intro-snap .page { transition: none !important; }
+
+.intro-stage { position: relative; display: grid; place-items: center; perspective: 1000px; }
+.intro-logo {
+  position: relative;
+  width: min(46vw, 230px, 30vh);
+  aspect-ratio: 600 / 672;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+  --depth: 2.4px;
+}
+.intro-logo:focus-visible { outline: none; }
+.intro-logo:focus-visible .l3-front { filter: drop-shadow(0 0 14px rgba(255, 244, 214, 0.9)); }
+/* De afară spre înăuntru: `zoom` = camera care intră pe ușă, `tilt` = înclinarea după cursor, `float` = plutirea,
+   `spin` = învârtirea. Fiecare mișcă doar `transform`, pe stratul lui. */
+.l3-zoom, .l3-tilt, .l3-float, .l3-spin { position: absolute; inset: 0; transform-style: preserve-3d; }
+/* Mărirea se face în jurul mijlocului ușii (vezi `.l3-door`), ca ușa să rămână pe loc și camera să treacă prin ea. */
+.l3-zoom, .l3-spin { transform-origin: 50% 47.47%; will-change: transform; }
+.l3-tilt { transition: transform 0.3s var(--ease-out); }
+/* Plutește și se leagănă încet, cât să i se vadă grosimea. */
+.l3-float { animation: l3-float 7s var(--ease-ambient) infinite alternate; will-change: transform; }
+@keyframes l3-float {
+  from { transform: translate3d(0, -9px, 0) rotateY(-16deg) rotateX(5deg); }
+  to { transform: translate3d(0, 9px, 0) rotateY(16deg) rotateX(-3deg); }
+}
+.l3-spin { transition: transform 1s var(--ease-out); }
+.l3-layer, .l3-face { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.l3-layer { transform: translateZ(calc((var(--i) - 5.5) * var(--depth))); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.l3-layer path { fill: #a8833f; }
+.l3-layer:nth-child(odd) path { fill: #97742f; }
+.l3-front { transform: translateZ(calc(6.2 * var(--depth))); backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.l3-eye { transform-box: fill-box; transform-origin: center; transform: scale(0); transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.5, 1); }
+/* Spatele: desenul scutului cu golul ușii plin de lumină, lumina care se revarsă în jur și canatul ușii, prins în
+   balama. Canatul se vede din ambele părți (când e deschis i se vede dosul); din față îl acoperă scutul. */
+.l3-back { display: block; transform: rotateY(180deg) translateZ(calc(6.2 * var(--depth))); transform-style: preserve-3d; }
+.l3-back-art { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.l3-door-glow {
+  position: absolute;
+  left: 50%;
+  top: 47.47%;
+  width: 150%;
+  aspect-ratio: 1;
+  margin: -75% 0 0 -75%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 244, 208, 0.5), rgba(240, 213, 144, 0.26) 34%, rgba(88, 201, 164, 0.12) 62%, transparent);
+  transform: translateZ(1px);
+  opacity: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  pointer-events: none;
+  will-change: opacity;
+}
+/* Ușa din desen: x 412–612 din 212–812, y 330–660 din 176–848. */
+.l3-door { position: absolute; left: 33.333%; top: 22.917%; width: 33.334%; height: 49.107%; transform-origin: 0 50%; transform: translateZ(2px); will-change: transform; }
+.l3-leaf { position: absolute; inset: 0; width: 100%; height: 100%; }
+.l3-lock { position: absolute; left: 27%; top: 35.15%; width: 46%; height: 33.94%; will-change: transform, opacity; }
+.l3-lock svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+/* Belciugul se ridică și se întoarce în jurul piciorului din dreapta (x 534, y 496 în desenul lacătului). */
+.l3-shackle { transform-origin: 73.9% 44.6%; will-change: transform; }
+/* Canatul se întunecă pe măsură ce se deschide (în loc de un filtru de luminozitate, care s-ar recalcula la fiecare cadru). */
+.l3-door-shade { position: absolute; inset: 1.2% 2%; border-radius: 5% / 3%; background: #00130f; opacity: 0; will-change: opacity; }
+/* După ce scutul s-a întors de tot, fața și feliile din spatele ușii nu se mai văd: nu le mai desenăm cât ține mărirea. */
+.intro.is-flat .l3-layer, .intro.is-flat .l3-front { visibility: hidden; }
+
+/* Lumina din spatele logo-ului și umbra de sub el: respiră încet (doar mărime, dus-întors). */
+.intro-halo {
+  position: absolute;
+  width: min(120vw, 620px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(56, 190, 150, 0.22), rgba(40, 150, 130, 0.08) 45%, transparent 72%);
+  animation: halo 6.5s var(--ease-ambient) infinite alternate;
+  transition: opacity 0.25s var(--ease-out);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+@keyframes halo { from { transform: scale3d(0.9, 0.9, 1); } to { transform: scale3d(1.08, 1.08, 1); } }
+.intro-shadow {
+  position: absolute;
+  top: calc(100% + 30px);
+  width: 70%;
+  height: 30px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.42), rgba(0, 0, 0, 0.16) 55%, transparent);
+  opacity: 0.8;
+  animation: l3-shadow 7s var(--ease-ambient) infinite alternate;
+  transition: opacity 0.25s var(--ease-out);
+  will-change: transform, opacity;
+}
+@keyframes l3-shadow { from { transform: scale3d(0.88, 0.88, 1); } to { transform: scale3d(1.1, 1.1, 1); } }
+
+/* Textul de deasupra: același stil ca titlul „Did I lock the door?” (`.etched`): litere pline, de la alb la verde
+   pal și auriu, cu o lumină verde-aurie în jur. Sunt două rânduri identice, unul peste altul: dedesubt lumina
+   (umbra literelor), deasupra literele. Fără contur pe litere (pe fontul sistemului, conturul desena și liniile
+   din interiorul literelor) și fără `filter`. Fiecare rând are loc liber jos, ca „y” să nu fie tăiat. */
+.intro-label {
+  position: absolute;
+  bottom: calc(100% + 76px);
+  width: max-content;
+  max-width: 92vw;
+  text-align: center;
+  font: 750 clamp(26px, 5.4vw, 58px)/1.2 var(--font-display);
+  letter-spacing: -0.03em;
+  opacity: 0;
+  transform: translate3d(0, 14px, 0) scale(0.96);
+  transition: opacity 0.5s var(--ease-out), transform 0.8s var(--ease-out);
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.intro-label span { display: block; padding: 0.06em 0.1em 0.2em; color: transparent; }
+.intro-label-glow {
+  position: absolute;
+  inset: 0;
+  text-shadow: 0 0 16px rgba(72, 214, 168, 0.3), 0 0 38px rgba(230, 198, 138, 0.16), 0 1px 0 rgba(0, 0, 0, 0.35);
+}
+.intro-label-text {
+  position: relative;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(214, 244, 232, 0.9) 48%, rgba(236, 208, 150, 0.86) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.intro-label::before {
+  content: "";
+  position: absolute;
+  inset: -70% -6%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(72, 224, 172, 0.3), rgba(236, 208, 140, 0.12) 55%, transparent);
+  opacity: 0.25;
+}
+@keyframes radiate { from { opacity: 0.25; } to { opacity: 1; } }
+.intro-hint {
+  position: absolute;
+  top: calc(100% + 84px);
+  width: max-content;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(214, 240, 228, 0.62);
+  animation: hint 2.6s var(--ease-ambient) infinite alternate;
+  transition: opacity 0.25s var(--ease-out);
+  pointer-events: none;
+}
+@keyframes hint { from { opacity: 0.45; } to { opacity: 1; } }
+.hint-touch { display: none; }
+@media (hover: none) { .hint-mouse { display: none; } .hint-touch { display: inline; } }
+
+/* Cu cursorul pe logo: se învârte și crește (în intro.js, OPEN_SCALE e aceeași mărire); apoi bifa devine zâmbet
+   și apare textul. */
+.intro.is-hover .l3-spin { transform: rotateY(360deg) scale(1.34); }
+.intro.is-hover .l3-float { animation-play-state: paused; }
+.intro.is-hover .intro-shadow { opacity: 0.5; }
+.intro.is-smile .l3-eye { transform: scale(1); }
+.intro.is-smile .l3-eye { animation: blink 4.2s 1.2s infinite; }
+@keyframes blink { 0%, 92%, 100% { transform: scale(1); } 96% { transform: scale(1, 0.1); } }
+.intro.is-smile .intro-label { opacity: 1; transform: none; }
+.intro.is-smile .intro-label::before { animation: radiate 2.8s var(--ease-ambient) 0.6s infinite alternate; }
+
+/* La click (și la întoarcere), totul e o singură mișcare, pornită din intro.js: scutul se întoarce, ușa de pe spatele
+   lui se deschide, camera intră prin ea și intrarea se estompează peste pagină. Aici doar se sting piesele din jur
+   și intrarea nu mai primește atingeri. */
+.intro.is-open { pointer-events: none; }
+.intro.is-open .intro-label, .intro.is-open .intro-hint, .intro.is-open .intro-shadow, .intro.is-open .intro-halo, .intro.is-open .intro-skip { opacity: 0; }
+.intro.is-open .intro-hint { animation: none; }
+.intro.is-open .intro-label { transition-duration: 0.25s; }
+.intro.is-open .l3-spin { transition: none; }
+.intro.is-open .intro-logo { cursor: default; }
+
+.intro-skip {
+  position: absolute;
+  right: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  padding: 9px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--glass-border);
+  background: rgba(243, 239, 230, 0.06);
+  color: var(--muted);
+  font: 600 14px var(--font);
+  cursor: pointer;
+  transition: opacity 0.25s var(--ease-out), color 0.2s var(--ease-out);
+}
+.intro-skip:hover { color: var(--text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .l3-float, .intro-halo, .intro-shadow, .intro-hint, .intro.is-smile .intro-label::before { animation: none; }
+  .l3-spin, .page { transition-duration: 0.01s; }
+  .intro.is-hover .l3-spin { transform: scale(1.12); }
+}
+
+/* ---------- Ruth, mascota ---------- */
+
+.ruth { transition: opacity 0.6s var(--ease-out); position: fixed; right: 22px; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 20; display: flex; flex-direction: column-reverse; align-items: flex-end; gap: 10px; pointer-events: none; }
+.ruth-button {
+  width: 62px;
+  aspect-ratio: 600 / 672;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  filter: drop-shadow(0 10px 16px rgba(0, 0, 0, 0.45)) drop-shadow(0 0 18px rgba(72, 214, 168, 0.25));
+  animation: ruth-float 5s var(--ease-ambient) infinite alternate;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Strălucirea roz de când se îmbujorează: un strat care doar apare și dispare. */
+.ruth-button::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 127, 168, 0.55), rgba(255, 127, 168, 0.18) 55%, transparent);
+  opacity: 0;
+  transition: opacity 0.5s var(--ease-out);
+  pointer-events: none;
+}
+.ruth-button svg { display: block; width: 100%; height: 100%; overflow: visible; transition: transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.ruth-button:hover svg, .ruth-button:focus-visible svg { transform: scale(1.14) rotate(-6deg); }
+@keyframes ruth-float { from { transform: translate3d(0, -4px, 0); } to { transform: translate3d(0, 5px, 0); } }
+.ruth-eyes { transform-box: fill-box; transform-origin: center; animation: blink 4.6s 1s infinite; }
+.ruth-cheek { fill: #ff7fa8; opacity: 0; transition: opacity 0.5s var(--ease-out); }
+.ruth-bubble {
+  max-width: 250px;
+  padding: 12px 16px;
+  border-radius: 18px 18px 4px 18px;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--muted);
+  opacity: 0;
+  transform: translate3d(0, 8px, 0) scale(0.94);
+  transform-origin: 100% 100%;
+  transition: opacity 0.3s var(--ease-out), transform 0.4s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.ruth-bubble strong { display: block; color: var(--text); font-size: 16px; margin-bottom: 2px; }
+/* Se prezintă cât ții cursorul pe ea, la focus de la tastatură și câteva secunde după click. */
+.ruth-button:hover ~ .ruth-bubble, .ruth-button:focus-visible ~ .ruth-bubble, .ruth.is-talking .ruth-bubble { opacity: 1; transform: none; }
+/* Loc pentru Ruth la capătul paginii, ca să nu acopere linkurile din subsol. */
+.page-home .footer { padding-bottom: 104px; }
+/* Îmbujorată: obrajii roz, o strălucire roz în jur. */
+.ruth.is-blushing .ruth-cheek { opacity: 0.85; }
+.ruth.is-blushing .ruth-button::before { opacity: 1; }
+.ruth.is-blushing .ruth-button svg { animation: ruth-shy 0.9s var(--ease-out); }
+@keyframes ruth-shy { 0% { transform: scale(1); } 30% { transform: scale(1.22) rotate(-9deg); } 55% { transform: scale(1.12) rotate(7deg); } 100% { transform: scale(1.14) rotate(-6deg); } }
+
+/* Fundalul, cât e Ruth îmbujorată: undele se unduiesc (doar `transform`) și un strat roz apare peste ele, apoi
+   revin. Fără filtre de culoare pe tot ecranul: ar fi recalculate la fiecare cadru. */
+.aurora.is-blush { animation: blush-warp 4.2s var(--ease-ambient); }
+.aurora.is-blush .aurora-blush { animation: blush-tint 4.2s var(--ease-ambient); }
+@keyframes blush-warp {
+  0% { transform: none; }
+  18% { transform: scale(1.1) skew(2.5deg, -1.5deg) rotate(1.2deg); }
+  40% { transform: scale(1.06) skew(-2.2deg, 1.6deg) rotate(-1deg); }
+  62% { transform: scale(1.09) skew(1.6deg, 1deg) rotate(0.7deg); }
+  82% { transform: scale(1.03) skew(-0.8deg, -0.5deg); }
+  100% { transform: none; }
+}
+@keyframes blush-tint { 0%, 100% { opacity: 0; } 18% { opacity: 1; } 62% { opacity: 0.85; } }
+/* Un cerc roz care pornește de la Ruth și se pierde spre margini, ca unda de la o picătură. */
+.blush-wave {
+  position: fixed;
+  right: 53px;
+  bottom: 56px;
+  z-index: 1;
+  width: 40px;
+  height: 40px;
+  margin: 0 -20px -20px 0;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(closest-side, transparent 62%, rgba(255, 150, 185, 0.5) 80%, rgba(255, 200, 220, 0.2) 92%, transparent);
+}
+.blush-wave.is-on { animation: blush-ring 2.4s var(--ease-out); }
+@keyframes blush-ring { 0% { transform: scale3d(0.4, 0.4, 1); opacity: 0.95; } 100% { transform: scale3d(90, 90, 1); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .ruth-button, .ruth-eyes { animation: none; }
+  .aurora.is-blush { animation: none; }
+  .blush-wave.is-on { animation: none; }
+}
+@media (max-width: 640px) {
+  .ruth { right: 14px; }
+  .ruth-button { width: 52px; }
+  .blush-wave { right: 40px; bottom: 50px; }
+  .intro-label { bottom: calc(100% + 60px); }
+}
